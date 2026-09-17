@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+import django
+from django.utils.encoding import force_str
+django.utils.encoding.force_text = force_str
 from pathlib import Path
 from datetime import timedelta
 
@@ -68,7 +70,7 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -170,24 +172,34 @@ USE_I18N = True
 
 USE_TZ = True
 
+# email credential for sending email
+#EMAIL_HOST='smtpout.secureserver.net'
+EMAIL_HOST='smtp.gmail.com'
+#EMAIL_HOST_USER='amaankhan4285@gmail.com'
+EMAIL_HOST_USER='hclguvi058@gmail.com'
+EMAIL_HOST_PASSWORD='whvccwjwsziqkhhi'
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+
+
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.1/howto/static-files/
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL ='/image/'
-STATICFILES_DIRS =[
+
+MEDIA_URL='/images/'
+
+STATICFILES_DIRS=[
     BASE_DIR / 'static'
 ]
-MEDIA_ROOT = 'static/image'
-CORS_ALLOW_ALL_ORIGINs= True
 
+MEDIA_ROOT='static/images'
 
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS=True

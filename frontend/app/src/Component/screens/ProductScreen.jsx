@@ -37,12 +37,6 @@ function ProductScreen({ product }) {
              </Link>
             
           </Card.Text>
-
-
-
-
-
-
         </Card.Body>
       </Card>
     </>

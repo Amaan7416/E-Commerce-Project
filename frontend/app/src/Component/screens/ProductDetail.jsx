@@ -15,6 +15,7 @@ function ProductDetails({params}) {
   const dispatch=useDispatch();
   const productDetails = useSelector((state)=>state.productDetails);
   const {error,loading,product}=productDetails
+ 
 
   const navigate =useNavigate();
   const location =useLocation();
@@ -109,7 +110,6 @@ const addToCartHandler=()=>{
                     </Row>
                   </ListGroup.Item>
                 )}
-
                 <ListGroup.Item>
                 <Button className='btn-block btn-success' disabled={product.countInStock==0} type='button' onClick={addToCartHandler}>Add to Cart</Button>
                 </ListGroup.Item>
