@@ -120,9 +120,6 @@ export const logout=()=>(dispatch)=>{
 }
 
 
-
-
-
 export const listUsers = () => async (dispatch, getState) => {
   try {
       dispatch({
@@ -144,13 +141,10 @@ export const listUsers = () => async (dispatch, getState) => {
           `/api/users/getallusers/`,
           config
       )
-
       dispatch({
           type: USER_LIST_SUCCESS,
           payload: data
       })
-
-
   } catch (error) {
       dispatch({
           type: USER_LIST_FAIL,
@@ -167,29 +161,23 @@ export const deleteUser = (id) => async (dispatch, getState) => {
       dispatch({
           type: USER_DELETE_REQUEST
       })
-
       const {
           userLogin: { userInfo },
       } = getState()
-
       const config = {
           headers: {
               'Content-type': 'application/json',
               Authorization: `Bearer ${userInfo.token}`
           }
       }
-
       const { data } = await axios.delete(
           `/api/users/delete/${id}/`,
           config
       )
-
       dispatch({
           type: USER_DELETE_SUCCESS,
           payload: data
       })
-
-
   } catch (error) {
       dispatch({
           type: USER_DELETE_FAIL,

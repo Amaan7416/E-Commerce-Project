@@ -1,15 +1,31 @@
-import { createStore, combineReducers, applyMiddleware } from "redux";
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
 import { thunk } from "redux-thunk";
-import { productDetailsReducers, productListReducers } from "./reducers/productReducers";
-import {userLoginReducers, userSignupReducers} from './reducers/userReducers';
+import { productCreateReducers, productDeleteReducers, productDetailsReducers, productListReducers, productUpdateReducers } from "./reducers/productReducers";
+import {userDeleteReducer, userDetailsReducer, userListReducer, userLoginReducers, userSignupReducers, userUpdateProfileReducer, userUpdateReducer} from './reducers/userReducers';
 import { cartReducers } from "./reducers/cartReducers";
+import { orderCreateReducer, orderDeliverReducer, orderDetailsReducer, orderListMyReducer, orderListReducers } from "./reducers/orderReducers";
 
 const reducer = combineReducers({
   productsList: productListReducers,
   productDetails: productDetailsReducers,
   userSignup:userSignupReducers,
   userLogin:userLoginReducers,
-  cart:cartReducers
+  cart:cartReducers,
+  orderCreate:orderCreateReducer,
+  orderDetails:orderDetailsReducer,
+  orderDeliver:orderDeliverReducer,
+
+  // admin
+  productCreate:productCreateReducers,
+  productUpdate:productUpdateReducers,
+  productDelete:productDeleteReducers,
+  orderList:orderListReducers,
+  userList:userListReducer,
+  userDelete:userDeleteReducer,
+  userUpdate:userUpdateReducer,
+  userDetails:userDetailsReducer,
+  userUpdateProfile:userUpdateProfileReducer,
+  orderMyList:orderListMyReducer,
 });
 
 const userInfoFormStorage=localStorage.getItem('userInfo')?
@@ -31,10 +47,17 @@ const initialState = {
 
 const middleware = [thunk];
 
-const store = createStore(
+/* const store = createStore(
   reducer,
   initialState,
   applyMiddleware(...middleware)
+); */
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose; 
+const store = createStore(
+  reducer,
+  initialState,
+  composeEnhancers(
+    applyMiddleware(...middleware)
+  )
 );
-
-export default store;
+ export default store;

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from .models import Product,Order,OrderItem,ShippingAddress
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
-from .serializer import ProductSerializer , UserSerializerWithToken,OrderSerializer
+from .serializer import ProductSerializer , UserSerializerWithToken,OrderSerializer,UserSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.models import User
@@ -18,6 +18,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.views.generic import View
 from .utils import TokenGenerator,generate_token
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework import status
 
 # Create your views here.
@@ -116,11 +117,11 @@ class ActivateAccountView(View):
             return render(request,"activatefail.html")
         
 @api_view(['POST'])
-@permission_classes
+@permission_classes([IsAuthenticated])
 def addOrderItems(request):
     user=request.user
     data=request.data
-    OrderItem=data['orderItems']
+    OrderItems=data['orderItems']
     if OrderItems and len(OrderItems)==0:
         return Response({'details':"No Order Items"},status=status.HTTP_400_BAD_REQUEST)
 
@@ -144,8 +145,8 @@ def addOrderItems(request):
     )
 
     # 3. Create order items ad set order-orderitem relationship
-    print(orderItems)
-    for i in orderItems:
+    print(OrderItems)
+    for i in OrderItems:
         print(i['product'])
         product=Product.objects.get(_id=i['product'])
         item=OrderItem.objects.create ( product=product,
@@ -161,4 +162,142 @@ def addOrderItems(request):
         product.countInStock-=item.qty
         product.save()
     serializer=OrderSerializer(order,many=False)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getMyOrders(request):
+    user=request.user
+    orders=user.order_set.all()
+    serializer=OrderSerializer(orders,many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getOrders(request):
+    orders=Order.objects.all()
+    serializer=OrderSerializer(orders,many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getOrderById(request,pk):
+    user=request.user
+
+    try:
+        order=Order.objects.get(_id=pk)
+        if user.is_staff or order.user==user:
+            serializer=OrderSerializer(order,many=False)
+            return Response(serializer.data)
+        else:
+            return Response({'details':"Not authorized to view this order"},status=status.HTTP_400_BAD_REQUEST)
+    except:
+        return Response({
+            'details':'Order does not exist'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+# admin views
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def createProduct(request):
+    user=request.user
+
+    product=Product.objects.create(
+        user=user,
+        name='Sample Name',
+        price=0,
+        brand='Sample Brand',
+        countInStock=0,
+        category='Sample Category',
+        description=''
+    )
+    serializer=ProductSerializer(product,many=False)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def updateProduct(request,pk):
+    data=request.data
+    product=Product.objects.get(_id=pk)
+    product.name=data['name']
+    product.price=data['price']
+    product.brand=data['brand']
+    product.countInStock=data['countInStock']
+    product.category=data['category']
+    product.description=data['description']
+    product.save()
+    serializer=ProductSerializer(product,many=False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def uploadImage(request):
+    data=request.data
+    product_id=data['product_id']
+    product=Product.objects.get(_id=product_id)
+    product.image=request.FILES.get('image')
+    product.save()
+    return Response('Image was Uploaded')
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteProduct(request,pk):
+    product=Product.objects.get(_id=pk)
+    product.delete()
+    return Response('Product Deleted....')
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getUsers(request):
+    users=User.objects.all()
+    serializer=UserSerializer(users,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserById(request, pk):
+    user=User.objects.get(id=pk)
+    serializer=UserSerializer(user,many=False)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserProfile(request):
+    user=request.user
+    serializer=UserSerializer(user,many=False)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUserProfile(request):
+    user=request.user
+    serializer=UserSerializerWithToken(user,many=False)
+    data=request.data
+    user.first_name=data['fname']
+    user.last_name=data['lname']
+    if data['password']!='':
+        user.password=make_password(data['password'])
+    user.save()
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteUser(request, pk):
+    user=User.objects.get(id=pk)
+    user.delete()
+    return Response("User is Deleted...")
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUser(request,pk):
+    user=User.objects.get(id=pk)
+    data=request.data
+    user.first_name=data['name']
+    user.email=data['email']
+    user.is_staff=data['isAdmin']
+    user.save()
+    serializer=UserSerializer(user,many=False)
     return Response(serializer.data)

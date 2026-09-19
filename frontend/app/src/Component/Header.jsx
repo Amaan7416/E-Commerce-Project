@@ -52,7 +52,7 @@ function Header() {
                   <div className="dropdown-menu">
 
                   <LinkContainer to='/profile'>
-                                        <NavDropdown.Item>Profile</NavDropdown.Item>
+                    <NavDropdown.Item>Profile</NavDropdown.Item>
                     </LinkContainer>
                     <NavDropdown.Item onClick={logoutHandler}>
                       Logout
